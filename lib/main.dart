@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_activity_recognition/page/recognition_walking.dart';
+import 'page/dashboard.dart';
 
 void main() {
   runApp(RootPage());
@@ -10,9 +12,18 @@ class RootPage extends StatefulWidget {
 }
 
 class _RootPageState extends State<RootPage> {
-  @override
+  static const String DASH_BOARD = '/';
+  static const String WALKING = '/walking';
 
+  @override
   Widget build(BuildContext context) {
-    return Container();
+    return MaterialApp(
+        debugShowCheckedModeBanner: false,
+        initialRoute: DASH_BOARD,
+        routes: {
+          DASH_BOARD: (context) => DashBoardPage(),
+          WALKING: (context) => WalkingRecognitionPage()
+        }
+    );
   }
 }
