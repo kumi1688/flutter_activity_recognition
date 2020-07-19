@@ -9,12 +9,12 @@ import 'package:flutter_activity_recognition/sensor/headphone.dart';
 import 'package:flutter_activity_recognition/sensor/light.dart';
 import 'package:flutter_activity_recognition/sensor/pedometer.dart';
 
-class WalkingRecognitionPage extends StatefulWidget {
+class RunningRecognitionPage extends StatefulWidget {
   @override
-  WalkingRecognitionPageState createState() => WalkingRecognitionPageState();
+  RunningRecognitionPageState createState() => RunningRecognitionPageState();
 }
 
-class WalkingRecognitionPageState extends State<WalkingRecognitionPage> {
+class RunningRecognitionPageState extends State<RunningRecognitionPage> {
   var _pedometerBloc;
   var _accelerometerBloc;
   var _lightBloc;
@@ -38,20 +38,20 @@ class WalkingRecognitionPageState extends State<WalkingRecognitionPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text('걷기 측정하기')),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            pedometerWidget(),
-            buildWidget('accelerometer'),
-            buildWidget('userAccelerometer'),
-            buildWidget('gyroscope'),
-            lightWidget(),
-            activityWidget(),
-          ],
-        ),
-      )
+        appBar: AppBar(title: Text('뛰기 측정하기')),
+        body: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: <Widget>[
+              pedometerWidget(),
+              buildWidget('accelerometer'),
+              buildWidget('userAccelerometer'),
+              buildWidget('gyroscope'),
+              lightWidget(),
+              activityWidget(),
+            ],
+          ),
+        )
     );
   }
 
@@ -88,16 +88,16 @@ class WalkingRecognitionPageState extends State<WalkingRecognitionPage> {
 
   Widget pedometerWidget(){
     return StreamBuilder<int>(
-            stream: _pedometerBloc.pedometer,
-            initialData: 0,
-            builder: (context, snapshot){
-              if(snapshot.hasData){
-                return Text('걸음수: ${snapshot.data - _pedometerBloc.pedometerInitialValue}', style: TextStyle(fontSize: 20));
-              } else {
-                return Text('현재 데이터 가져올 수 없음', style: TextStyle(fontSize: 20));
-              }
-            }
-        );
+        stream: _pedometerBloc.pedometer,
+        initialData: 0,
+        builder: (context, snapshot){
+          if(snapshot.hasData){
+            return Text('걸음수: ${snapshot.data - _pedometerBloc.pedometerInitialValue}', style: TextStyle(fontSize: 20));
+          } else {
+            return Text('현재 데이터 가져올 수 없음', style: TextStyle(fontSize: 20));
+          }
+        }
+    );
   }
 
   Widget lightWidget(){
@@ -129,4 +129,3 @@ class WalkingRecognitionPageState extends State<WalkingRecognitionPage> {
     );
   }
 }
-

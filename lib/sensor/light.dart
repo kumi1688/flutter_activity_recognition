@@ -4,6 +4,7 @@ import 'package:light/light.dart';
 import 'package:rxdart/rxdart.dart';
 
 class LightBloc{
+
   final _lightSubject = BehaviorSubject<int>();
   Light _light;
 
@@ -19,6 +20,5 @@ class LightBloc{
   void onData(int value) async{
     _lightSubject.add(value);
   }
-
   Stream<int> get light => _lightSubject.stream;
 }
