@@ -17,22 +17,14 @@ class RunningRecognitionPage extends StatefulWidget {
 class RunningRecognitionPageState extends State<RunningRecognitionPage> {
   var _pedometerBloc;
   var _accelerometerBloc;
-  var _lightBloc;
-  var _headphoneBloc;
-  var _activityBloc;
   static const MethodChannel _methodChannel = MethodChannel('com.example.flutter_activity_recognition');
   static const EventChannel _eventChannel = EventChannel('com.example.flutter_activity_recognition/stream/light');
-  Stream<int> _lightSensorStream;
 
   @override
   void initState(){
     super.initState();
     _pedometerBloc = new PedometerBloc();
     _accelerometerBloc = new AccelerometerBloc();
-//    _lightBloc = new LightBloc();
-//    _headphoneBloc = new HeadphoneBloc();
-    _activityBloc = new ActivityBloc();
-//    _lightSensorStream = _eventChannel.receiveBroadcastStream().map((lux) => lux);
   }
 
   @override
@@ -40,30 +32,8 @@ class RunningRecognitionPageState extends State<RunningRecognitionPage> {
     print('해체');
     _pedometerBloc.dispose();
     _accelerometerBloc.dispose();
-    _activityBloc.dispose();
-//    _lightBloc.dispose();
     super.dispose();
   }
-
-//  @override
-//  Widget build(BuildContext context) {
-//    return Scaffold(
-//      appBar: AppBar( title: Text('걷기 측정하기')),
-//      body: Center(
-//        child: Column(
-//          mainAxisAlignment: MainAxisAlignment.center,
-//          children: <Widget>[
-//            pedometerWidget(),
-//            buildWidget('accelerometer'),
-//            buildWidget('userAccelerometer'),
-//            buildWidget('gyroscope'),
-//            lightWidget(),
-//            activityWidget(),
-//          ],
-//        ),
-//      )
-//    );
-//  }
 
   @override
   Widget build(BuildContext context){
@@ -75,8 +45,7 @@ class RunningRecognitionPageState extends State<RunningRecognitionPage> {
           buildWidget('accelerometer'),
           buildWidget('userAccelerometer'),
           buildWidget('gyroscope'),
-//          lightWidget(),
-          activityWidget(),
+//          activityWidget(),
         ],
       ),
     );
@@ -127,31 +96,18 @@ class RunningRecognitionPageState extends State<RunningRecognitionPage> {
     );
   }
 
-  Widget lightWidget(){
-    return StreamBuilder<int>(
-      stream: _lightBloc.light,
-      builder: (context, snapshot){
-        if(snapshot.hasData){
-          return Text('조도: ${snapshot.data}', style: TextStyle(fontSize: 20));
-        } else {
-          return Text('현재 데이터 가져올 수 없음', style: TextStyle(fontSize: 20));
-        }
-      },
-    );
-  }
-
-  Widget activityWidget(){
-    return StreamBuilder(
-        stream: _activityBloc.userActivity,
-        builder: (context, snapshot){
-          if(snapshot.hasData){
-            Activity act = snapshot.data;
-            return Text('${act.confidence} ${act.type}', style: TextStyle(fontSize: 20));
-          }
-          else{
-            return Text('현재 활동 감지 되지 않음', style: TextStyle(fontSize: 20));
-          }
-        }
-    );
-  }
+//  Widget activityWidget(){
+//    return StreamBuilder(
+//        stream: ActivityRecognition.activityUpdates().asBroadcastStream(),
+//        builder: (context, snapshot){
+//          if(snapshot.hasData){
+//            Activity act = snapshot.data;
+//            return Text('${act.confidence} ${act.type}', style: TextStyle(fontSize: 20));
+//          }
+//          else{
+//            return Text('현재 활동 감지 되지 않음', style: TextStyle(fontSize: 20));
+//          }
+//        }
+//    );
+//  }
 }

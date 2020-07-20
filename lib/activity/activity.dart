@@ -7,21 +7,19 @@ import 'package:activity_recognition_flutter/activity_recognition_flutter.dart';
 class ActivityBloc{
   static const MethodChannel _methodChannel = const MethodChannel('com.example.flutter_activity_recognition');
   var _activitySubject = BehaviorSubject<Activity>();
-  ActivityRecognition activityRecognition;
-  StreamSubscription _subscription;
+  ActivityRecognition _activityRecognition;
 
   ActivityBloc(){
-    if(_subscription == null){
-      _subscription = ActivityRecognition.activityUpdates().listen((event) {
-        _activitySubject.add(event);
-      });
-    }
+//    print('참인가요22 ${ActivityRecognition.activityUpdates().asBroadcastStream().isBroadcast}');
+
+//    Stream<Activity> activity = ActivityRecognition.activityUpdates();
+    _activitySubject.addStream(ActivityRecognition.activityUpdates().asBroadcastStream());
   }
 
   void dispose() async {
-    await _subscription.cancel();
-    _subscription = null;
-    _activitySubject.close();
+    print('닫힘');
+    await _activitySubject.drain();
+    await _activitySubject.close();
   }
 
   Future<void> getActivityState() async {
@@ -35,5 +33,4 @@ class ActivityBloc{
   }
 
   Stream<Activity> get userActivity => _activitySubject.stream;
-
 }

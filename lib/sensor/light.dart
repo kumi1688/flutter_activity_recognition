@@ -12,6 +12,11 @@ class LightBloc{
     startListening();
   }
 
+  void dispose() async {
+    await _lightSubject.drain();
+    await _lightSubject.close();
+  }
+
   void startListening(){
     _light = new Light();
     _light.lightSensorStream.listen(onData);

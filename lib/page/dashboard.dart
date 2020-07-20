@@ -1,5 +1,10 @@
+import 'dart:async';
+
+import 'package:activity_recognition_flutter/activity_recognition_flutter.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_activity_recognition/page/recognition_rest.dart';
 import 'package:flutter_activity_recognition/page/recognition_running.dart';
+import 'package:flutter_activity_recognition/page/recognition_sleep.dart';
 import 'package:flutter_activity_recognition/page/recognition_walking.dart';
 
 class DashBoardPage extends StatefulWidget {
@@ -9,7 +14,6 @@ class DashBoardPage extends StatefulWidget {
 
 class _DashBoardPageState extends State<DashBoardPage> {
   static const String WALKING = '/walking';
-
   _showNextPage(BuildContext context, String destination) => Navigator.pushNamed(context, destination);
 
   @override
@@ -29,17 +33,12 @@ class _DashBoardPageState extends State<DashBoardPage> {
               children: <Widget>[
                 WalkingRecognitionPage(),
                 RunningRecognitionPage(),
-                RaisedButton(onPressed: ()=>_showNextPage(context, WALKING), child: Text('걷기 상태 측정하기')),
-                RaisedButton(onPressed: ()=>_showNextPage(context, WALKING), child: Text('걷기 상태 측정하기')),
-                RaisedButton(onPressed: ()=>_showNextPage(context, WALKING), child: Text('걷기 상태 측정하기')),
+                RestRecognitionPage(),
+                SleepRecognitionPage(),
+                RaisedButton(onPressed: ()=>_showNextPage(context, WALKING), child: Text('탈것 상태 측정하기')),
               ],),
-
-
       ),
       length: 5,
     );
   }
-
-
-
 }

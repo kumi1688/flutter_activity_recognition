@@ -33,6 +33,7 @@ public class MainActivity extends FlutterActivity implements EventChannel.Stream
     private String _headphoneState = "헤드폰 상태";
     final static String EVENT_CHANNEL_LIGHT = "com.example.flutter_activity_recognition/stream/light";
     final static String EVENT_CHANNEL_HEADPHONE = "com.example.flutter_activity_recognition/stream/headphone";
+    final static String EVENT_CHANNEL_TEMPERATURE = "com.example.flutter_activity_recognition/stream/temperature";
 
     private SensorEventListener sensorEventListener;
     private SensorManager sensorManager;
@@ -41,6 +42,7 @@ public class MainActivity extends FlutterActivity implements EventChannel.Stream
     private MethodChannel methodChannel;
 
     private EventChannel eventChannel_light;
+    private EventChannel eventChannel_temeprature;
     private EventChannel eventChannel_headphone;
 
     @Override
@@ -49,50 +51,23 @@ public class MainActivity extends FlutterActivity implements EventChannel.Stream
         methodChannel = new MethodChannel(flutterEngine.getDartExecutor(), "com.example.flutter_activity_recognition");
         methodChannel.setMethodCallHandler(methodCallHandler);
 
-        eventChannel_light = new EventChannel(flutterEngine.getDartExecutor(), EVENT_CHANNEL_LIGHT);
+//        eventChannel_light = new EventChannel(flutterEngine.getDartExecutor(), EVENT_CHANNEL_LIGHT);
         eventChannel_headphone = new EventChannel(flutterEngine.getDartExecutor(), EVENT_CHANNEL_HEADPHONE);
-        eventChannel_light.setStreamHandler(this);
-
-//        eventChannel_headphone.setStreamHandler(new FenceReceiver());
+        eventChannel_temeprature = new EventChannel(flutterEngine.getDartExecutor(), EVENT_CHANNEL_TEMPERATURE);
+//        eventChannel_light.setStreamHandler(this);
+        eventChannel_temeprature.setStreamHandler(this);
 
         sensorManager = (SensorManager) this.getSystemService(this.SENSOR_SERVICE);
-        sensor = sensorManager.getDefaultSensor(Sensor.TYPE_LIGHT);
+        sensor = sensorManager.getDefaultSensor(Sensor.TYPE_AMBIENT_TEMPERATURE);
     }
 
     private MethodChannel.MethodCallHandler methodCallHandler = (methodCall, result) -> {
       if(methodCall.method.equals("getHeadphoneState")){
 
       } else if (methodCall.method.equals("getActivityState")){
-          getUserState(result);
+
       }
     };
-
-    private void getUserState(MethodChannel.Result result) {
-        System.out.println("사용자 상태 가져옴");
-        Awareness.getSnapshotClient(this).getDetectedActivity()
-                .addOnSuccessListener(new OnSuccessListener<DetectedActivityResponse>() {
-                    @Override
-                    public void onSuccess(DetectedActivityResponse dar) {
-                        ActivityRecognitionResult arr = dar.getActivityRecognitionResult();
-                        DetectedActivity probableActivity = arr.getMostProbableActivity();
-
-                        int confidence = probableActivity.getConfidence();
-                        int type = probableActivity.getType();
-
-                        UserActivity userActivity = new UserActivity(type, confidence);
-                        System.out.println(userActivity.toMap());
-                        result.success(userActivity.toMap());
-                    }
-                })
-                .addOnFailureListener(new OnFailureListener() {
-                    @Override
-                    public void onFailure(@NonNull Exception e) {
-                        e.printStackTrace();
-//                        _userState = "사용자 상태 가져올 수 없음";
-                        result.notImplemented();
-                    }
-                });
-    }
 
     @Override
     public void onListen(Object arguments, EventChannel.EventSink events){
@@ -111,8 +86,9 @@ public class MainActivity extends FlutterActivity implements EventChannel.Stream
 
             @Override
             public void onSensorChanged(SensorEvent event) {
-                int lux = (int) event.values[0];
-                events.success(lux);
+                double temperature = (double) event.values[0];
+//                int lux = (int) event.values[0];
+                events.success(temperature);
             }
         };
     }
