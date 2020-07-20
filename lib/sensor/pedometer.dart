@@ -3,12 +3,13 @@ import 'dart:async';
 import 'package:rxdart/rxdart.dart';
 import 'package:pedometer/pedometer.dart';
 
-class PedometerBloc {
+class PedometerBloc  {
   final _pedometerSubject = BehaviorSubject<int>();
   Pedometer _pedometer;
   int _pedometerInitialValue;
 
-  void startListening() {
+
+  void startListening() async {
     _pedometer = new Pedometer();
     _pedometer.pedometerStream.listen(_onData,
         onError: _onError, onDone: _onDone, cancelOnError: true);
@@ -25,12 +26,20 @@ class PedometerBloc {
     }
   }
 
+
   void _onDone() => print("Finished pedometer tracking");
   void _onError(error) => print("Flutter Pedometer Error: $error");
 
   PedometerBloc () {
       _pedometerInitialValue = -1;
       startListening();
+  }
+
+  void dispose() async{
+    print('pedometer 해체중');
+    await _pedometer.pedometerStream.listen((event) {}).cancel();
+
+    _pedometer = null;
   }
 
   Stream<int> get pedometer => _pedometerSubject.stream;

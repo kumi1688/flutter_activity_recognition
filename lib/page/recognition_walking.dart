@@ -29,29 +29,56 @@ class WalkingRecognitionPageState extends State<WalkingRecognitionPage> {
     super.initState();
     _pedometerBloc = new PedometerBloc();
     _accelerometerBloc = new AccelerometerBloc();
-    _lightBloc = new LightBloc();
-    _headphoneBloc = new HeadphoneBloc();
+//    _lightBloc = new LightBloc();
+//    _headphoneBloc = new HeadphoneBloc();
     _activityBloc = new ActivityBloc();
-    _lightSensorStream = _eventChannel.receiveBroadcastStream().map((lux) => lux);
+//    _lightSensorStream = _eventChannel.receiveBroadcastStream().map((lux) => lux);
   }
 
   @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: Text('걷기 측정하기')),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            pedometerWidget(),
-            buildWidget('accelerometer'),
-            buildWidget('userAccelerometer'),
-            buildWidget('gyroscope'),
-            lightWidget(),
-            activityWidget(),
-          ],
-        ),
-      )
+  void dispose(){
+    print('해체');
+    _pedometerBloc.dispose();
+    _accelerometerBloc.dispose();
+    _activityBloc.dispose();
+//    _lightBloc.dispose();
+    super.dispose();
+  }
+
+//  @override
+//  Widget build(BuildContext context) {
+//    return Scaffold(
+//      appBar: AppBar( title: Text('걷기 측정하기')),
+//      body: Center(
+//        child: Column(
+//          mainAxisAlignment: MainAxisAlignment.center,
+//          children: <Widget>[
+//            pedometerWidget(),
+//            buildWidget('accelerometer'),
+//            buildWidget('userAccelerometer'),
+//            buildWidget('gyroscope'),
+//            lightWidget(),
+//            activityWidget(),
+//          ],
+//        ),
+//      )
+//    );
+//  }
+
+  @override
+  Widget build(BuildContext context){
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: <Widget>[
+          pedometerWidget(),
+          buildWidget('accelerometer'),
+          buildWidget('userAccelerometer'),
+          buildWidget('gyroscope'),
+//          lightWidget(),
+          activityWidget(),
+        ],
+      ),
     );
   }
 
@@ -115,11 +142,10 @@ class WalkingRecognitionPageState extends State<WalkingRecognitionPage> {
 
   Widget activityWidget(){
     return StreamBuilder(
-        stream: ActivityRecognition.activityUpdates(),
+        stream: _activityBloc.userActivity,
         builder: (context, snapshot){
           if(snapshot.hasData){
             Activity act = snapshot.data;
-            print(act);
             return Text('${act.confidence} ${act.type}', style: TextStyle(fontSize: 20));
           }
           else{

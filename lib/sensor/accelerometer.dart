@@ -15,6 +15,12 @@ class AccelerometerBloc{
     startListening();
   }
 
+  void dispose() async {
+    await accelerometerEvents.listen((event) {}).cancel();
+    await gyroscopeEvents.listen((event) {}).cancel();
+    await userAccelerometerEvents.listen((event) { }).cancel();
+  }
+
   void startListening(){
     accelerometerEvents.listen((AccelerometerEvent event) {
       _accelerometerValues = toListString(toListDouble(event));
