@@ -4,6 +4,7 @@ import 'package:activity_recognition_flutter/activity_recognition_flutter.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_activity_recognition/activity/activity.dart';
+import 'package:flutter_activity_recognition/location/location.dart';
 import 'package:flutter_activity_recognition/sensor/accelerometer.dart';
 import 'package:flutter_activity_recognition/sensor/headphone.dart';
 import 'package:flutter_activity_recognition/sensor/light.dart';
@@ -18,16 +19,14 @@ class WalkingRecognitionPage extends StatefulWidget {
 class WalkingRecognitionPageState extends State<WalkingRecognitionPage> {
   var _pedometerBloc;
   var _accelerometerBloc;
-
-  static const MethodChannel _methodChannel = MethodChannel('com.example.flutter_activity_recognition');
-  static const EventChannel _eventChannel = EventChannel('com.example.flutter_activity_recognition/stream/light');
-  Stream<int> _lightSensorStream;
+  var _locationBloc;
 
   @override
   void initState(){
     super.initState();
     _pedometerBloc = new PedometerBloc();
     _accelerometerBloc = new AccelerometerBloc();
+    _locationBloc = new LocationBloc();
   }
 
   @override
@@ -35,6 +34,7 @@ class WalkingRecognitionPageState extends State<WalkingRecognitionPage> {
     print('메인 해체');
     _pedometerBloc.dispose();
     _accelerometerBloc.dispose();
+    _locationBloc.dispose();
     super.dispose();
   }
 
@@ -48,6 +48,7 @@ class WalkingRecognitionPageState extends State<WalkingRecognitionPage> {
           buildWidget('accelerometer'),
           buildWidget('userAccelerometer'),
           buildWidget('gyroscope'),
+          locationWidget(),
         ],
       ),
     );
@@ -96,5 +97,18 @@ class WalkingRecognitionPageState extends State<WalkingRecognitionPage> {
               }
             }
         );
+  }
+
+  Widget locationWidget(){
+    return StreamBuilder<String>(
+        stream: _locationBloc.locationStream,
+        builder: (context, snapshot){
+          if(snapshot.hasData){
+            return Text('${snapshot.data}', style: TextStyle(fontSize: 20));
+          } else {
+            return Text('위치 데이터 가져올 수 없음', style: TextStyle(fontSize: 20));
+          }
+        }
+    );
   }
 }
