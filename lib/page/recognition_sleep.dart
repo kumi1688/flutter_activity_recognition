@@ -4,6 +4,7 @@ import 'package:activity_recognition_flutter/activity_recognition_flutter.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_activity_recognition/activity/activity.dart';
+import 'package:flutter_activity_recognition/location/location.dart';
 import 'package:flutter_activity_recognition/sensor/accelerometer.dart';
 import 'package:flutter_activity_recognition/sensor/battery.dart';
 import 'package:flutter_activity_recognition/sensor/headphone.dart';
@@ -22,7 +23,7 @@ class SleepRecognitionPageState extends State<SleepRecognitionPage> {
   var _accelerometerBloc;
   var _lightBloc;
   var _batteryBloc;
-  var _temperatureBloc;
+  var _locationBloc;
   var _networkBloc;
 
   static const MethodChannel _methodChannel = MethodChannel('com.example.flutter_activity_recognition');
@@ -38,37 +39,65 @@ class SleepRecognitionPageState extends State<SleepRecognitionPage> {
     _lightBloc = new LightBloc();
     _batteryBloc = new BatteryBloc();
     _networkBloc = new NetworkBloc();
+    _locationBloc = new LocationBloc();
     temperatureStream = _eventChannel.receiveBroadcastStream().map((v)=>v);
   }
 
   @override
   void dispose(){
-    print('메인 해체');
     _pedometerBloc.dispose();
     _accelerometerBloc.dispose();
     _lightBloc.dispose();
     _batteryBloc.dispose();
-    _temperatureBloc.dispose();
     _networkBloc.dispose();
+    _locationBloc.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context){
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: <Widget>[
-          pedometerWidget(),
-          buildWidget('accelerometer'),
-          buildWidget('userAccelerometer'),
-          buildWidget('gyroscope'),
-          lightWidget(),
-          batteryWidget(),
-          temperatureWidget(),
-          networkWidget(),
-        ],
-      ),
+    return ListView(
+      children: <Widget>[
+        ListTile(
+          leading: Icon(Icons.directions_walk, size: 30,),
+          title: Text('걸음', style: TextStyle(fontSize: 15)),
+          trailing: pedometerWidget(),
+        ),
+        ListTile(
+          leading: Icon(Icons.arrow_forward, size: 30,),
+          title: Text('가속도', style: TextStyle(fontSize: 15)),
+          trailing: buildWidget('accelerometer'),
+        ),
+        ListTile(
+          leading: Icon(Icons.arrow_forward, size: 30,),
+          title: Text('가속도(중력x)', style: TextStyle(fontSize: 15)),
+          trailing: buildWidget('userAccelerometer'),
+        ),
+        ListTile(
+          leading: Icon(Icons.arrow_forward, size: 30,),
+          title: Text('자이로스코프', style: TextStyle(fontSize: 15)),
+          trailing: buildWidget('gyroscope'),
+        ),
+        ListTile(
+          leading: Icon(Icons.location_on, size: 30,),
+          title: Text('위치', style: TextStyle(fontSize: 15)),
+          trailing: locationWidget(),
+        ),
+        ListTile(
+          leading: Icon(Icons.lightbulb_outline, size: 30,),
+          title: Text('조도', style: TextStyle(fontSize: 15)),
+          trailing: lightWidget()
+        ),
+        ListTile(
+          leading: Icon(Icons.battery_full, size: 30,),
+          title: Text('배터리', style: TextStyle(fontSize: 15)),
+          trailing: batteryWidget()
+        ),
+        ListTile(
+            leading: Icon(Icons.wifi, size: 30),
+            title: networkWidget(),
+        ),
+      ],
     );
   }
 
@@ -95,24 +124,11 @@ class SleepRecognitionPageState extends State<SleepRecognitionPage> {
         stream: stream,
         builder: (context, snapshot){
           if(snapshot.hasData){
-            return Text('${text}: ${snapshot.data}', style: TextStyle(fontSize: 20));
+            return Text('${snapshot.data}', style: TextStyle(fontSize: 15));
           } else {
-            return Text('가속도 데이터 가져올 수 없음', style: TextStyle(fontSize: 20));
+            return Text('현재 데이터 가져올 수 없음', style: TextStyle(fontSize: 15));
           }
         }
-    );
-  }
-
-  Widget temperatureWidget(){
-    return StreamBuilder<double>(
-      stream: temperatureStream,
-      builder: (context, snapshot){
-        if(snapshot.hasData){
-          return Text('${snapshot.data}', style: TextStyle(fontSize: 20));
-        } else {
-          return Text('온도 데이터 가져올 수 없음', style: TextStyle(fontSize: 20));
-        }
-      },
     );
   }
 
@@ -122,9 +138,9 @@ class SleepRecognitionPageState extends State<SleepRecognitionPage> {
         initialData: 0,
         builder: (context, snapshot){
           if(snapshot.hasData){
-            return Text('걸음수: ${snapshot.data - _pedometerBloc.pedometerInitialValue}', style: TextStyle(fontSize: 20));
+            return Text('${snapshot.data - _pedometerBloc.pedometerInitialValue}', style: TextStyle(fontSize: 15));
           } else {
-            return Text('걸음 데이터 가져올 수 없음', style: TextStyle(fontSize: 20));
+            return Text('현재 데이터 가져올 수 없음', style: TextStyle(fontSize: 15));
           }
         }
     );
@@ -135,9 +151,9 @@ class SleepRecognitionPageState extends State<SleepRecognitionPage> {
         stream: _lightBloc.light,
         builder: (context, snapshot){
           if(snapshot.hasData){
-            return Text('조도: ${snapshot.data}', style: TextStyle(fontSize: 20));
+            return Text('${snapshot.data}', style: TextStyle(fontSize: 15));
           } else {
-            return Text('조도 데이터 가져올 수 없음', style: TextStyle(fontSize: 20));
+            return Text('조도 데이터 가져올 수 없음', style: TextStyle(fontSize: 15));
           }
         }
     );
@@ -148,9 +164,10 @@ class SleepRecognitionPageState extends State<SleepRecognitionPage> {
       stream: _batteryBloc.batteryStream,
       builder: (context, snapshot){
         if(snapshot.hasData){
-          return Text('배터리 상태: ${snapshot.data['charging']} 잔량 ${snapshot.data['level']}', style: TextStyle(fontSize: 20));
+          String result = '${snapshot.data['charging']} 잔량 ${snapshot.data['level']}%';
+          return Text(result, style: TextStyle(fontSize: 15));
         } else {
-          return Text('배터리 데이터 가져올 수 없음', style: TextStyle(fontSize: 20));
+          return Text('배터리 데이터 가져올 수 없음', style: TextStyle(fontSize: 15));
         }
       }
     );
@@ -161,9 +178,22 @@ class SleepRecognitionPageState extends State<SleepRecognitionPage> {
         stream: _networkBloc.networkStream,
         builder: (context, snapshot){
           if(snapshot.hasData){
-            return Text('${snapshot.data}', style: TextStyle(fontSize: 20));
+            return Text('${snapshot.data}', style: TextStyle(fontSize: 15));
           } else {
-            return Text('네트워크 데이터 가져올 수 없음', style: TextStyle(fontSize: 20));
+            return Text('네트워크 데이터 가져올 수 없음', style: TextStyle(fontSize: 15));
+          }
+        }
+    );
+  }
+
+  Widget locationWidget(){
+    return StreamBuilder<String>(
+        stream: _locationBloc.locationStream,
+        builder: (context, snapshot){
+          if(snapshot.hasData){
+            return Text('${snapshot.data}', style: TextStyle(fontSize: 15));
+          } else {
+            return Text('위치 데이터 가져올 수 없음', style: TextStyle(fontSize: 15));
           }
         }
     );

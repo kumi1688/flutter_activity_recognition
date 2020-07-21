@@ -10,6 +10,7 @@ class BatteryBloc{
 
   BatteryBloc(){
     battery = new Battery();
+    getInitialData();
     startListening();
   }
 
@@ -30,9 +31,17 @@ class BatteryBloc{
   }
 
   void dispose() async {
-    streamSubscription.cancel();
     await batterySubject.drain();
     await batterySubject.close();
+    streamSubscription.cancel();
+  }
+
+  Future<Map> getInitialData() async {
+    int batteryLevel = await getBatteryLevel();
+    Map map = new Map();
+    map['charging'] = '확인중';
+    map['level'] = await getBatteryLevel();
+    batterySubject.add(map);
   }
 
   Future<int> getBatteryLevel() async {
@@ -44,4 +53,6 @@ class BatteryBloc{
   int get batteryLevel {
     getBatteryLevel().then((value) => value);
   }
+
+
 }

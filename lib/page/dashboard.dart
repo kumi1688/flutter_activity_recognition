@@ -6,6 +6,7 @@ import 'package:flutter_activity_recognition/activity/activity.dart';
 import 'package:flutter_activity_recognition/page/recognition_rest.dart';
 import 'package:flutter_activity_recognition/page/recognition_running.dart';
 import 'package:flutter_activity_recognition/page/recognition_sleep.dart';
+import 'package:flutter_activity_recognition/page/recognition_vehicle.dart';
 import 'package:flutter_activity_recognition/page/recognition_walking.dart';
 
 class DashBoardPage extends StatefulWidget {
@@ -45,7 +46,7 @@ class _DashBoardPageState extends State<DashBoardPage> {
                 RunningRecognitionPage(),
                 RestRecognitionPage(),
                 SleepRecognitionPage(),
-                RaisedButton(onPressed: ()=>_showNextPage(context, WALKING), child: Text('탈것 상태 측정하기')),
+                VehicleRecognitionPage(),
               ],),
       ),
       length: 5,

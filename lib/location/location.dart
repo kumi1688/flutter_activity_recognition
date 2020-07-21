@@ -20,7 +20,10 @@ class LocationBloc  {
       inBackground: true
     ).listen((event) {
       if(event.isSuccessful){
-          locationSubject.add('경도: ${event.location.longitude}, 위도: ${event.location.latitude}, 고도: ${event.location.altitude}');
+          String result = '경도: ${event.location.longitude}\n'
+                          '위도: ${event.location.latitude} \n';
+//                          '고도: ${event.location.altitude} \n';
+          locationSubject.add(result);
       }
     });
   }
