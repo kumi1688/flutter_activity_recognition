@@ -10,9 +10,6 @@ class ActivityBloc{
   ActivityRecognition _activityRecognition;
 
   ActivityBloc(){
-//    print('참인가요22 ${ActivityRecognition.activityUpdates().asBroadcastStream().isBroadcast}');
-
-//    Stream<Activity> activity = ActivityRecognition.activityUpdates();
     _activitySubject.addStream(ActivityRecognition.activityUpdates().asBroadcastStream());
   }
 

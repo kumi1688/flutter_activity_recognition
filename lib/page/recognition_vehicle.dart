@@ -9,12 +9,12 @@ import 'package:flutter_activity_recognition/sensor/headphone.dart';
 import 'package:flutter_activity_recognition/sensor/light.dart';
 import 'package:flutter_activity_recognition/sensor/pedometer.dart';
 
-class SleepRecognitionPage extends StatefulWidget {
+class VehicleRecognitionPage extends StatefulWidget {
   @override
-  SleepRecognitionPageState createState() => SleepRecognitionPageState();
+  VehicleRecognitionPageState createState() => VehicleRecognitionPageState();
 }
 
-class SleepRecognitionPageState extends State<SleepRecognitionPage> {
+class VehicleRecognitionPageState extends State<VehicleRecognitionPage> {
   var _pedometerBloc;
   var _accelerometerBloc;
   var _lightBloc;

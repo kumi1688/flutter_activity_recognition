@@ -18,11 +18,11 @@ class BatteryBloc{
       battery.onBatteryStateChanged.listen((BatteryState event) async {
         Map map = new Map();
         if(event == BatteryState.full){
-          map['charging'] = 'full';
+          map['charging'] = '완전히 충전됨';
         } else if (event == BatteryState.charging){
-          map['charging'] = 'charging';
+          map['charging'] = '충전중';
         } else if (event == BatteryState.discharging ){
-          map['charging'] = 'discharging';
+          map['charging'] = '충전안됨';
         }
         map['level'] = await getBatteryLevel();
         batterySubject.add(map);

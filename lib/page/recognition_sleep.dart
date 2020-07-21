@@ -8,6 +8,7 @@ import 'package:flutter_activity_recognition/sensor/accelerometer.dart';
 import 'package:flutter_activity_recognition/sensor/battery.dart';
 import 'package:flutter_activity_recognition/sensor/headphone.dart';
 import 'package:flutter_activity_recognition/sensor/light.dart';
+import 'package:flutter_activity_recognition/sensor/network.dart';
 import 'package:flutter_activity_recognition/sensor/pedometer.dart';
 import 'package:flutter_activity_recognition/sensor/temperature.dart';
 
@@ -22,6 +23,7 @@ class SleepRecognitionPageState extends State<SleepRecognitionPage> {
   var _lightBloc;
   var _batteryBloc;
   var _temperatureBloc;
+  var _networkBloc;
 
   static const MethodChannel _methodChannel = MethodChannel('com.example.flutter_activity_recognition');
   static const EventChannel _eventChannel = EventChannel('com.example.flutter_activity_recognition/stream/temperature');
@@ -35,7 +37,7 @@ class SleepRecognitionPageState extends State<SleepRecognitionPage> {
     _accelerometerBloc = new AccelerometerBloc();
     _lightBloc = new LightBloc();
     _batteryBloc = new BatteryBloc();
-    _temperatureBloc = new TemperatureBloc();
+    _networkBloc = new NetworkBloc();
     temperatureStream = _eventChannel.receiveBroadcastStream().map((v)=>v);
   }
 
@@ -47,6 +49,7 @@ class SleepRecognitionPageState extends State<SleepRecognitionPage> {
     _lightBloc.dispose();
     _batteryBloc.dispose();
     _temperatureBloc.dispose();
+    _networkBloc.dispose();
     super.dispose();
   }
 
@@ -63,6 +66,7 @@ class SleepRecognitionPageState extends State<SleepRecognitionPage> {
           lightWidget(),
           batteryWidget(),
           temperatureWidget(),
+          networkWidget(),
         ],
       ),
     );
@@ -93,7 +97,7 @@ class SleepRecognitionPageState extends State<SleepRecognitionPage> {
           if(snapshot.hasData){
             return Text('${text}: ${snapshot.data}', style: TextStyle(fontSize: 20));
           } else {
-            return Text('현재 데이터 가져올 수 없음', style: TextStyle(fontSize: 20));
+            return Text('가속도 데이터 가져올 수 없음', style: TextStyle(fontSize: 20));
           }
         }
     );
@@ -106,7 +110,7 @@ class SleepRecognitionPageState extends State<SleepRecognitionPage> {
         if(snapshot.hasData){
           return Text('${snapshot.data}', style: TextStyle(fontSize: 20));
         } else {
-          return Text('현재 데이터 가져올 수 없음', style: TextStyle(fontSize: 20));
+          return Text('온도 데이터 가져올 수 없음', style: TextStyle(fontSize: 20));
         }
       },
     );
@@ -120,7 +124,7 @@ class SleepRecognitionPageState extends State<SleepRecognitionPage> {
           if(snapshot.hasData){
             return Text('걸음수: ${snapshot.data - _pedometerBloc.pedometerInitialValue}', style: TextStyle(fontSize: 20));
           } else {
-            return Text('현재 데이터 가져올 수 없음', style: TextStyle(fontSize: 20));
+            return Text('걸음 데이터 가져올 수 없음', style: TextStyle(fontSize: 20));
           }
         }
     );
@@ -133,7 +137,7 @@ class SleepRecognitionPageState extends State<SleepRecognitionPage> {
           if(snapshot.hasData){
             return Text('조도: ${snapshot.data}', style: TextStyle(fontSize: 20));
           } else {
-            return Text('현재 데이터 가져올 수 없음', style: TextStyle(fontSize: 20));
+            return Text('조도 데이터 가져올 수 없음', style: TextStyle(fontSize: 20));
           }
         }
     );
@@ -146,10 +150,22 @@ class SleepRecognitionPageState extends State<SleepRecognitionPage> {
         if(snapshot.hasData){
           return Text('배터리 상태: ${snapshot.data['charging']} 잔량 ${snapshot.data['level']}', style: TextStyle(fontSize: 20));
         } else {
-          return Text('현재 데이터 가져올 수 없음', style: TextStyle(fontSize: 20));
+          return Text('배터리 데이터 가져올 수 없음', style: TextStyle(fontSize: 20));
         }
       }
     );
   }
-}
 
+  Widget networkWidget(){
+    return StreamBuilder<String>(
+        stream: _networkBloc.networkStream,
+        builder: (context, snapshot){
+          if(snapshot.hasData){
+            return Text('${snapshot.data}', style: TextStyle(fontSize: 20));
+          } else {
+            return Text('네트워크 데이터 가져올 수 없음', style: TextStyle(fontSize: 20));
+          }
+        }
+    );
+  }
+}

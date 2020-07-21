@@ -18,7 +18,6 @@ class WalkingRecognitionPage extends StatefulWidget {
 class WalkingRecognitionPageState extends State<WalkingRecognitionPage> {
   var _pedometerBloc;
   var _accelerometerBloc;
-  var _activityBloc;
 
   static const MethodChannel _methodChannel = MethodChannel('com.example.flutter_activity_recognition');
   static const EventChannel _eventChannel = EventChannel('com.example.flutter_activity_recognition/stream/light');
@@ -29,7 +28,6 @@ class WalkingRecognitionPageState extends State<WalkingRecognitionPage> {
     super.initState();
     _pedometerBloc = new PedometerBloc();
     _accelerometerBloc = new AccelerometerBloc();
-//    _activityBloc = new ActivityBloc();
   }
 
   @override
@@ -37,7 +35,6 @@ class WalkingRecognitionPageState extends State<WalkingRecognitionPage> {
     print('메인 해체');
     _pedometerBloc.dispose();
     _accelerometerBloc.dispose();
-//    _activityBloc.dispose();
     super.dispose();
   }
 
@@ -51,7 +48,6 @@ class WalkingRecognitionPageState extends State<WalkingRecognitionPage> {
           buildWidget('accelerometer'),
           buildWidget('userAccelerometer'),
           buildWidget('gyroscope'),
-//          activityWidget()
         ],
       ),
     );
@@ -101,19 +97,4 @@ class WalkingRecognitionPageState extends State<WalkingRecognitionPage> {
             }
         );
   }
-
-//  Widget activityWidget(){
-//    return StreamBuilder(
-//        stream: _activityBloc.userActivity,
-//        builder: (context, snapshot){
-//          if(snapshot.hasData){
-//            Activity act = snapshot.data;
-//            return Text('${act.confidence} ${act.type}', style: TextStyle(fontSize: 20));
-//          }
-//          else{
-//            return Text('현재 활동 감지 되지 않음', style: TextStyle(fontSize: 20));
-//          }
-//        }
-//    );
-//  }
 }

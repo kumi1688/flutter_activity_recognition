@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:activity_recognition_flutter/activity_recognition_flutter.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_activity_recognition/activity/activity.dart';
 import 'package:flutter_activity_recognition/page/recognition_rest.dart';
 import 'package:flutter_activity_recognition/page/recognition_running.dart';
 import 'package:flutter_activity_recognition/page/recognition_sleep.dart';
@@ -13,15 +14,24 @@ class DashBoardPage extends StatefulWidget {
 }
 
 class _DashBoardPageState extends State<DashBoardPage> {
+  ActivityBloc _activityBloc;
+
   static const String WALKING = '/walking';
+
   _showNextPage(BuildContext context, String destination) => Navigator.pushNamed(context, destination);
+
+  @override
+  void initState(){
+      super.initState();
+      _activityBloc = new ActivityBloc();
+  }
 
   @override
   Widget build(BuildContext context) {
     return DefaultTabController(
       child: Scaffold(
         appBar: AppBar(
-          title: Text('상태 측정하기'),
+          title: activityWidget(),
           bottom: TabBar(tabs: <Widget>[
             Tab(icon: Icon(Icons.directions_walk), text: "걷기", key: Key("walk"),),
             Tab(icon: Icon(Icons.directions_run), text: "뛰기", key: Key("run")),
@@ -39,6 +49,21 @@ class _DashBoardPageState extends State<DashBoardPage> {
               ],),
       ),
       length: 5,
+    );
+  }
+
+  Widget activityWidget(){
+    return StreamBuilder(
+        stream: _activityBloc.userActivity,
+        builder: (context, snapshot){
+          if(snapshot.hasData){
+            Activity act = snapshot.data;
+            return Text('${act.confidence}% ${act.type}', style: TextStyle(fontSize: 20));
+          }
+          else{
+            return Text('현재 활동 감지 되지 않음', style: TextStyle(fontSize: 20));
+          }
+        }
     );
   }
 }
