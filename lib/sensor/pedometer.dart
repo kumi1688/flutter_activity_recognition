@@ -44,4 +44,5 @@ class PedometerBloc  {
 
   Stream<int> get pedometer => _pedometerSubject.stream;
   int get pedometerInitialValue => _pedometerInitialValue;
+  int get pedometerValue => _pedometerSubject.value;
 }

@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 
 import 'package:activity_recognition_flutter/activity_recognition_flutter.dart';
 import 'package:flutter/material.dart';
@@ -8,11 +9,12 @@ import 'package:flutter_activity_recognition/location/location.dart';
 import 'package:flutter_activity_recognition/sensor/accelerometer.dart';
 import 'package:flutter_activity_recognition/sensor/battery.dart';
 import 'package:flutter_activity_recognition/sensor/bluetooth.dart';
-import 'package:flutter_activity_recognition/sensor/headphone.dart';
 import 'package:flutter_activity_recognition/sensor/light.dart';
 import 'package:flutter_activity_recognition/sensor/network.dart';
 import 'package:flutter_activity_recognition/sensor/pedometer.dart';
 import 'package:rxdart/rxdart.dart';
+import 'package:http/http.dart' as http;
+import 'package:socket_io_client/socket_io_client.dart' as IO;
 
 class WalkingRecognitionPage extends StatefulWidget {
   @override
@@ -27,11 +29,11 @@ class WalkingRecognitionPageState extends State<WalkingRecognitionPage> {
   var _locationBloc;
   var _networkBloc;
   var _bluetoothBloc;
+  var _activityBloc;
+  Timer _timer;
+  IO.Socket _socket;
 
-  static const MethodChannel _methodChannel = MethodChannel('com.example.flutter_activity_recognition');
-  static const EventChannel _eventChannel = EventChannel('com.example.flutter_activity_recognition/stream/temperature');
-
-  Stream<double> temperatureStream;
+  static const String SERVER_URL = 'http://15.164.226.165:3000/network';
 
   @override
   void initState(){
@@ -43,12 +45,16 @@ class WalkingRecognitionPageState extends State<WalkingRecognitionPage> {
     _networkBloc = new NetworkBloc();
     _locationBloc = new LocationBloc();
     _bluetoothBloc = new BluetoothBloc();
-    temperatureStream = _eventChannel.receiveBroadcastStream().map((v)=>v);
+
+    initWebsocket();
+
+    _timer = Timer.periodic(Duration(seconds: 1), (timer) {
+        sendDataByWebsocket();
+      });
   }
 
   @override
   void dispose(){
-    print('메인 해체');
     _pedometerBloc.dispose();
     _accelerometerBloc.dispose();
     _lightBloc.dispose();
@@ -56,6 +62,7 @@ class WalkingRecognitionPageState extends State<WalkingRecognitionPage> {
     _networkBloc.dispose();
     _locationBloc.dispose();
     _bluetoothBloc.dispose();
+    _timer.cancel();
     super.dispose();
   }
 
@@ -66,23 +73,13 @@ class WalkingRecognitionPageState extends State<WalkingRecognitionPage> {
         ListTile(
           leading: Icon(Icons.bluetooth, size: 30,),
           title: Text('블루투스 전원', style: TextStyle(fontSize: 15)),
-          trailing: bluetoothStateWidget()
-        ),
-        ListTile(
-            leading: Icon(Icons.bluetooth, size: 30,),
-            title: Text('블루투스 스캔', style: TextStyle(fontSize: 15)),
-            trailing: bluetoothScanWidget()
+          trailing: bleStateWidget()
         ),
         ListTile(
             leading: Icon(Icons.bluetooth, size: 30,),
             title: Text('블루투스 연결', style: TextStyle(fontSize: 15)),
             trailing: bluetoothConnectWidget()
-        ),
-        ListTile(
-            leading: Icon(Icons.bluetooth, size: 30,),
-            title: Text('블루투스 정보', style: TextStyle(fontSize: 15)),
-            trailing: bluetoothInfoWidget()
-        ),
+    ),
         ListTile(
           leading: Icon(Icons.directions_walk, size: 30,),
           title: Text('걸음', style: TextStyle(fontSize: 15)),
@@ -128,20 +125,16 @@ class WalkingRecognitionPageState extends State<WalkingRecognitionPage> {
 
   Widget buildWidget(String type){
     var stream;
-    String text;
 
     switch(type){
       case 'accelerometer':
-        stream = _accelerometerBloc.accelerometerValue;
-        text= '가속도';
+        stream = _accelerometerBloc.accelerometerStream;
         break;
       case 'gyroscope':
-        stream = _accelerometerBloc.gyroscopeValue;
-        text='자이로스코프';
+        stream = _accelerometerBloc.gyroscopeStream;
         break;
       case 'userAccelerometer':
-        stream = _accelerometerBloc.userAccelerometerValue;
-        text='가속도(중력x)';
+        stream = _accelerometerBloc.userAccelerometerStream;
         break;
     }
 
@@ -157,9 +150,9 @@ class WalkingRecognitionPageState extends State<WalkingRecognitionPage> {
     );
   }
 
-  Widget bluetoothStateWidget(){
+  Widget bleStateWidget(){
     return StreamBuilder<String>(
-        stream: _bluetoothBloc.bluetoothStateStream,
+        stream: _bluetoothBloc.bleStateStream,
         builder: (context, snapshot){
           if(snapshot.hasData){
             return Text('${snapshot.data}', style: TextStyle(fontSize: 15));
@@ -170,9 +163,9 @@ class WalkingRecognitionPageState extends State<WalkingRecognitionPage> {
     );
   }
 
-  Widget bluetoothScanWidget(){
+  Widget bleScanWidget(){
     return StreamBuilder<String>(
-        stream: _bluetoothBloc.bluetoothScanStream,
+        stream: _bluetoothBloc.bleScanStream,
         builder: (context, snapshot){
           if(snapshot.hasData){
             return Text('${snapshot.data}', style: TextStyle(fontSize: 15));
@@ -185,20 +178,7 @@ class WalkingRecognitionPageState extends State<WalkingRecognitionPage> {
 
   Widget bluetoothConnectWidget(){
     return StreamBuilder<String>(
-        stream: _bluetoothBloc.bluetoothSecondStream,
-        builder: (context, snapshot){
-          if(snapshot.hasData){
-            return Text('${snapshot.data}', style: TextStyle(fontSize: 15));
-          } else {
-            return Text('현재 데이터 가져올 수 없음', style: TextStyle(fontSize: 15));
-          }
-        }
-    );
-  }
-
-  Widget bluetoothInfoWidget(){
-    return StreamBuilder<String>(
-        stream: _bluetoothBloc.bluetoothConnectStream,
+        stream: _bluetoothBloc.bluetoothStream,
         builder: (context, snapshot){
           if(snapshot.hasData){
             return Text('${snapshot.data}', style: TextStyle(fontSize: 15));
@@ -225,7 +205,7 @@ class WalkingRecognitionPageState extends State<WalkingRecognitionPage> {
 
   Widget lightWidget(){
     return StreamBuilder<int>(
-        stream: _lightBloc.light,
+        stream: _lightBloc.lightStream,
         builder: (context, snapshot){
           if(snapshot.hasData){
             return Text('${snapshot.data}', style: TextStyle(fontSize: 15));
@@ -251,11 +231,15 @@ class WalkingRecognitionPageState extends State<WalkingRecognitionPage> {
   }
 
   Widget networkWidget(){
-    return StreamBuilder<String>(
+    return StreamBuilder<Map>(
         stream: _networkBloc.networkStream,
         builder: (context, snapshot){
           if(snapshot.hasData){
-            return Text('${snapshot.data}', style: TextStyle(fontSize: 15));
+            String text = '${snapshot.data['state']}\n'
+                          '${snapshot.data['name'] ?? ''}\n'
+                          '${snapshot.data['bssid'] ?? ''}\n'
+                          '${snapshot.data['ip'] ?? ''}';
+            return Text('${text}', style: TextStyle(fontSize: 15));
           } else {
             return Text('네트워크 데이터 가져올 수 없음', style: TextStyle(fontSize: 15));
           }
@@ -264,15 +248,75 @@ class WalkingRecognitionPageState extends State<WalkingRecognitionPage> {
   }
 
   Widget locationWidget(){
-    return StreamBuilder<String>(
+    return StreamBuilder<Map>(
         stream: _locationBloc.locationStream,
         builder: (context, snapshot){
           if(snapshot.hasData){
-            return Text('${snapshot.data}', style: TextStyle(fontSize: 15));
+            String text = '위도: ${snapshot.data['latitude']}\n'
+                          '경도: ${snapshot.data['longitude']}\n';
+
+            return Text('${text}', style: TextStyle(fontSize: 15));
           } else {
             return Text('위치 데이터 가져올 수 없음', style: TextStyle(fontSize: 15));
           }
         }
     );
+  }
+
+  void sendData() async{
+      var data = {
+        "time": new DateTime.now().toString()
+      };
+      http.post(SERVER_URL, body: data);
+  }
+
+  void initWebsocket() async{
+    _socket = IO.io(SERVER_URL, <String, dynamic>{
+      'transports': ['websocket']
+    });
+    _socket.on('connect', (_){
+      print('connect');
+    });
+  }
+
+  void sendDataByWebsocket() async{
+    int pedometerValue = _pedometerBloc.pedometerValue ;
+    int initialValue = _pedometerBloc.pedometerInitialValue;
+    int pedometerResult = pedometerValue != null ? pedometerValue - initialValue : null;
+    var data = {
+      "network": {
+        "state": _networkBloc.networkValue['state'] ?? '',
+        "name": _networkBloc.networkValue['name'] ?? '',
+        "bssid": _networkBloc.networkValue['bssid'] ?? '',
+        "ip": _networkBloc.networkValue['ip'] ?? '',
+      },
+      "pedometer": pedometerResult,
+      "accelerometer": _accelerometerBloc.accelerometerValue,
+      "gyroscope": _accelerometerBloc.gyroscopeValue,
+      "userAccelerometer": _accelerometerBloc.userAccelerometerValue,
+      "light": _lightBloc.lightValue,
+      "battery": {
+        "charging": _batteryBloc.batteryValue['charging'] ?? '',
+        "level": _batteryBloc.batteryValue['level'] ?? ''
+      },
+      "location": {
+        'longitude': _locationBloc.locationValue['longitude'] ?? '',
+        'latitude' : _locationBloc.locationValue['latitude'] ?? '',
+        "altitude" : _locationBloc.locationValue['altitude'] ?? '',
+      },
+      "bluetooth": {
+        "on": _bluetoothBloc.bluetoothState['on'] ?? '',
+        "connectToDevice": _bluetoothBloc.bluetoothState['connectToDevice'] ?? ''
+      },
+      "activity": {
+        "probableActivity": {
+          "type": _activityBloc?.userActivityValue?.type ?? '',
+          "confidence": _activityBloc?.userActivityValue?.cofidence ?? '',
+        },
+        "userSelected": "walk"
+      },
+      "time": new DateTime.now().toString()
+    };
+    _socket.emit('data', data);
   }
 }

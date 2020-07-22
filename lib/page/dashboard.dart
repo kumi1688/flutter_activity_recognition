@@ -33,8 +33,10 @@ class _DashBoardPageState extends State<DashBoardPage> {
       child: Scaffold(
         appBar: AppBar(
           title: activityWidget(),
-          bottom: TabBar(tabs: <Widget>[
-            Tab(icon: Icon(Icons.directions_walk), text: "걷기", key: Key("walk"),),
+          bottom: TabBar(
+            
+            tabs: <Widget>[
+            Tab(icon: Icon(Icons.directions_walk), text: "걷기", key: Key("walk"),) ,
             Tab(icon: Icon(Icons.directions_run), text: "뛰기", key: Key("run")),
             Tab(icon: Icon(Icons.free_breakfast), text: "휴식", key: Key("rest")),
             Tab(icon: Icon(Icons.hotel), text: "수면", key: Key("sleep")),
@@ -55,7 +57,7 @@ class _DashBoardPageState extends State<DashBoardPage> {
 
   Widget activityWidget(){
     return StreamBuilder(
-        stream: _activityBloc.userActivity,
+        stream: _activityBloc.userActivityStream,
         builder: (context, snapshot){
           if(snapshot.hasData){
             Activity act = snapshot.data;
@@ -67,4 +69,6 @@ class _DashBoardPageState extends State<DashBoardPage> {
         }
     );
   }
+
+  Activity get userActivityValue => _activityBloc.userActivityValue;
 }

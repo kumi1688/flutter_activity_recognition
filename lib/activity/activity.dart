@@ -6,11 +6,16 @@ import 'package:activity_recognition_flutter/activity_recognition_flutter.dart';
 
 class ActivityBloc{
   static const MethodChannel _methodChannel = const MethodChannel('com.example.flutter_activity_recognition');
-  var _activitySubject = BehaviorSubject<Activity>();
+  static final _activitySubject = BehaviorSubject<Activity>();
   ActivityRecognition _activityRecognition;
 
   ActivityBloc(){
-    _activitySubject.addStream(ActivityRecognition.activityUpdates().asBroadcastStream());
+      _activitySubject.addStream(ActivityRecognition.activityUpdates().asBroadcastStream());
+  }
+
+  Future<bool> checkListen() async {
+     bool result = await _activitySubject.isEmpty;
+     return result;
   }
 
   void dispose() async {
@@ -21,7 +26,6 @@ class ActivityBloc{
 
   Future<void> getActivityState() async {
     final Map result = await _methodChannel.invokeMethod('getActivityState');
-//    _activitySubject.add(changeToString(result));
   }
 
   String changeToString(Map map){
@@ -29,5 +33,6 @@ class ActivityBloc{
     return string;
   }
 
-  Stream<Activity> get userActivity => _activitySubject.stream;
+  Stream<Activity> get userActivityStream => _activitySubject.stream;
+  Activity get userActivityValue => _activitySubject.value;
 }

@@ -25,5 +25,7 @@ class LightBloc{
   void onData(int value) async{
     _lightSubject.add(value);
   }
-  Stream<int> get light => _lightSubject.stream;
+
+  Stream<int> get lightStream => _lightSubject.stream;
+  int get lightValue => _lightSubject.value;
 }

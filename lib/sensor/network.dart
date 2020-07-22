@@ -11,7 +11,7 @@ class NetworkBloc {
   final Connectivity _connectivity = Connectivity();
   StreamSubscription<ConnectivityResult> _connectivitySubscription;
 
-  var networkSubject = BehaviorSubject<String>();
+  var networkSubject = BehaviorSubject<Map>();
 
   NetworkBloc(){
     initConnectivity();
@@ -102,19 +102,35 @@ class NetworkBloc {
             'Wifi BSSID: $wifiBSSID\n'
             'Wifi IP: $wifiIP\n';
 
-        networkSubject.add(connectionStatus);
+        Map map = {
+          'state': "wifi",
+          'name': wifiName,
+          'bssid': wifiBSSID,
+          'ip': wifiIP
+        };
+        networkSubject.add(map);
         break;
       case ConnectivityResult.mobile:
+        Map map = {
+          'state': "mobile",
+        };
+        networkSubject.add(map);
+        break;
       case ConnectivityResult.none:
-        String connectionStatus = result.toString();
-        networkSubject.add(connectionStatus);
+        Map map = {
+          'state': "none",
+        };
+        networkSubject.add(map);
         break;
       default:
-        String connectionStatus = '네트워크 정보 가져올 수 없음';
-        networkSubject.add(connectionStatus);
+        Map map = {
+          'state': "can get network State",
+        };
+        networkSubject.add(map);
         break;
     }
   }
 
-  Stream<String> get networkStream => networkSubject.stream;
+  Stream<Map> get networkStream => networkSubject.stream;
+  Map get networkValue => networkSubject.value;
 }

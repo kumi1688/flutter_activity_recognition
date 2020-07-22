@@ -46,7 +46,12 @@ class AccelerometerBloc{
     return accelerometerString;
   }
 
-  Stream<List<String>> get accelerometerValue => _accelerometerSubject.stream;
-  Stream<List<String>> get gyroscopeValue => _gyroscopeSubject.stream;
-  Stream<List<String>> get userAccelerometerValue => _userAccelerometerSubject.stream;
+  Stream<List<String>> get accelerometerStream => _accelerometerSubject.stream;
+  Stream<List<String>> get gyroscopeStream => _gyroscopeSubject.stream;
+  Stream<List<String>> get userAccelerometerStream => _userAccelerometerSubject.stream;
+
+  List<String> get accelerometerValue => _accelerometerSubject.value;
+  List<String> get gyroscopeValue => _gyroscopeSubject.value;
+  List<String> get userAccelerometerValue => _userAccelerometerSubject.value;
+
 }

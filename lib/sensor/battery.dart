@@ -53,6 +53,5 @@ class BatteryBloc{
   int get batteryLevel {
     getBatteryLevel().then((value) => value);
   }
-
-
+  Map get batteryValue => batterySubject.value;
 }
